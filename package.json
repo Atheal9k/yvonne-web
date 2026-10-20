@@ -1,0 +1,34 @@
+{
+  "name": "yvonne-web",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "dev": "concurrently --kill-others --names web,api \"npm run dev --workspace @yvonne/web\" \"npm run dev --workspace @yvonne/api\"",
+    "dev:web": "npm run dev --workspace @yvonne/web",
+    "dev:api": "npm run dev --workspace @yvonne/api",
+    "build": "npm run build --workspaces",
+    "start": "npm run start --workspace @yvonne/api",
+    "typecheck": "npm run typecheck --workspaces",
+    "lint": "eslint apps",
+    "test": "npm run test --workspace @yvonne/api",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
+    "concurrently": "^9.2.1",
+    "eslint": "^10.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2"
+  }
+}
