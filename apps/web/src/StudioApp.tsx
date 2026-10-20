@@ -1,65 +1,39 @@
 import { useState } from 'react'
 import {
-  ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
-  Check,
+  Camera,
   ChevronDown,
   Heart,
   MapPin,
   Menu,
-  PenLine,
-  Sparkles,
+  PartyPopper,
   X,
 } from 'lucide-react'
-import { Artwork, DoodleFlower } from './components/Artwork'
-import type { ArtworkKind } from './components/Artwork'
+import { avatar, kindArt, pieces, wavyTrio } from './portfolio'
+import type { Category, Piece, PortraitKind } from './portfolio'
+import { ArtImage, Sparkle } from './components/Decor'
 import { Dialog, EventForm, PortraitForm } from './components/RequestDialog'
 import './App.css'
 
 type Modal =
-  | { type: 'portrait'; kind?: ArtworkKind }
+  | { type: 'portrait'; kind?: PortraitKind }
   | { type: 'event' }
-  | { type: 'artwork'; kind: ArtworkKind }
+  | { type: 'artwork'; piece: Piece }
   | { type: 'privacy' }
   | null
-const pieces: {
-  kind: ArtworkKind
-  title: string
-  category: string
-  note: string
-  tag: string
-}[] = [
-  {
-    kind: 'live',
-    title: 'The beginning of forever',
-    category: 'Couples',
-    note: 'For the just-married kind of magic.',
-    tag: 'LOVE, ON PAPER',
-  },
-  {
-    kind: 'pet',
-    title: 'Your very best friend',
-    category: 'Pets',
-    note: 'Big personalities. Little paw prints.',
-    tag: 'THE GOOD DOG CLUB',
-  },
-  {
-    kind: 'family',
-    title: 'All your favourite people',
-    category: 'Families',
-    note: 'Your wonderfully one-of-a-kind crew.',
-    tag: 'THE WHOLE LITTLE WORLD',
-  },
-]
+
+const ALL = 'Everything'
+const filters: (typeof ALL | Category)[] = [ALL, 'Pets', 'People', 'Couples']
+
 const faqs = [
   [
     'How do custom portraits work?',
     'Choose who you’d like illustrated and your preferred format, then share a photo and a few details. I’ll put together a personal quote. Once the details are agreed and payment is arranged, your portrait can begin.',
   ],
   [
-    'Can I have my portrait printed?',
-    'Absolutely. Choose a digital keepsake or an art print when you make your request. Print size, paper, postage and the final price will be confirmed in your quote.',
+    'Can I have my portrait printed or framed?',
+    'Absolutely. Choose a digital keepsake or an art print when you make your request. Size, framing, postage and the final price will be confirmed in your quote.',
   ],
   [
     'What events can you illustrate at?',
@@ -75,13 +49,39 @@ const faqs = [
   ],
 ]
 
+const navLinks = [
+  ['Portfolio', '#work'],
+  ['Custom portraits', '#portraits'],
+  ['Live illustration', '#live'],
+  ['Meet Yvonne', '#about'],
+]
+
+function Wordmark() {
+  return (
+    <>
+      <Sparkle className="brand-sparkle" size={20} />
+      <span className="wordmark-text">
+        yvonne <span>studios</span>
+      </span>
+    </>
+  )
+}
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [filter, setFilter] = useState('All the lovely things')
+  const [filter, setFilter] = useState<(typeof filters)[number]>(ALL)
   const [modal, setModal] = useState<Modal>(null)
   const close = () => setModal(null)
-  const openPortrait = () => setModal({ type: 'portrait' })
+  const openPortrait = (kind?: PortraitKind) =>
+    setModal({ type: 'portrait', kind })
   const openEvent = () => setModal({ type: 'event' })
+  const shown = pieces.filter(
+    (piece) => filter === ALL || piece.category === filter,
+  )
+  const count = (item: (typeof filters)[number]) =>
+    item === ALL
+      ? pieces.length
+      : pieces.filter((piece) => piece.category === item).length
 
   return (
     <>
@@ -89,45 +89,38 @@ function App() {
         Skip to the lovely things
       </a>
       <div className="announcement">
-        <span>Little portraits. Lasting memories.</span>
-        <span className="announcement-star">✳</span>
-        <span>Made with love in Melbourne</span>
-        <Heart size={12} />
+        <span>Little portraits</span>
+        <Sparkle size={11} />
+        <span>Big feelings</span>
+        <Sparkle size={11} />
+        <span>Hand-drawn in Melbourne</span>
       </div>
       <header className="site-header">
         <a className="wordmark" href="#" aria-label="Yvonne Studios home">
-          <DoodleFlower className="brand-flower" />
-          <span>
-            yvonne<span className="wordmark-bottom">S T U D I O S</span>
-          </span>
+          <Wordmark />
         </a>
         <nav
           id="mobile-navigation"
           className={menuOpen ? 'main-nav is-open' : 'main-nav'}
           aria-label="Main navigation"
         >
-          {[
-            ['The lovely things', '#work'],
-            ['Custom portraits', '#portraits'],
-            ['Live illustration', '#live'],
-            ['Meet Yvonne', '#about'],
-          ].map(([name, href]) => (
+          {navLinks.map(([name, href]) => (
             <a key={href} href={href} onClick={() => setMenuOpen(false)}>
               {name}
             </a>
           ))}
           <button
-            className="mobile-contact"
+            className="mobile-contact button button-primary"
             onClick={() => {
               setMenuOpen(false)
               openEvent()
             }}
           >
-            Let’s chat <ArrowUpRight size={16} />
+            Say hello <ArrowUpRight size={16} />
           </button>
         </nav>
-        <button className="button header-button" onClick={openEvent}>
-          Let’s make memories <ArrowUpRight size={16} />
+        <button className="button button-primary header-button" onClick={openEvent}>
+          Say hello <ArrowUpRight size={16} />
         </button>
         <button
           className="menu-toggle icon-button"
@@ -144,83 +137,113 @@ function App() {
         <section className="hero section-shell" aria-labelledby="hero-title">
           <div className="hero-copy">
             <p className="eyebrow">
-              <span className="little-line" /> LIVE PORTRAITS & CUSTOM
-              ILLUSTRATION
+              Live portraits &amp; custom illustration :)
             </p>
             <h1 id="hero-title">
               Little portraits.
               <br />
-              Big feelings.
-              <br />
-              <span className="hero-italic">
-                Yours to keep.
-                <svg viewBox="0 0 470 19" aria-hidden="true">
-                  <path d="M4 12Q230-3 464 7M18 17Q245 4 448 12" />
+              <span className="hero-highlight">
+                Big feelings.
+                <svg viewBox="0 0 300 18" aria-hidden="true">
+                  <path d="M4 12C60 2 110 16 160 8S250 4 296 10" />
                 </svg>
               </span>
             </h1>
             <p className="hero-description">
-              Your favourite people. Your once-in-a-lifetime moments. Turn them
-              into joyful, one-of-a-kind illustrations to treasure forever.
+              Hand-drawn marker portraits of your favourite people and pets,
+              with little sparkles, wavy frames and names lettered by hand.
+              Commissioned from your photos, or drawn live at your event.
             </p>
             <div className="hero-actions">
-              <button className="button button-primary" onClick={openPortrait}>
-                Find your perfect portrait <ArrowUpRight size={18} />
+              <button
+                className="button button-primary"
+                onClick={() => openPortrait()}
+              >
+                Request a portrait <ArrowUpRight size={18} />
               </button>
-              <a className="text-link" href="#live">
-                Planning an event? <ArrowRight size={17} />
+              <a className="button button-outline" href="#live">
+                Live drawing at events <ArrowRight size={17} />
               </a>
             </div>
-            <div className="hero-footnote">
-              <MapPin size={14} strokeWidth={1.5} />
-              <span>Melbourne based. Heartfelt, everywhere.</span>
-            </div>
+            <p className="hero-footnote">
+              <MapPin size={14} strokeWidth={1.8} /> Melbourne based. Drawn
+              with love.
+            </p>
           </div>
-          <div className="hero-art-area">
-            <span className="hero-spark spark-one">✳</span>
-            <span className="hero-spark spark-two">✧</span>
-            <div className="art-backdrop" />
-            <div className="hero-paper">
-              <div className="paper-tape" />
-              <Artwork
-                kind="couple"
-                label="Whimsical SVG portrait of a couple and their little golden dog, surrounded by flowers"
+          <div className="hero-art">
+            <div className="hero-blob" aria-hidden="true" />
+            <ArtImage
+              className="hero-avatar"
+              src={avatar.src}
+              srcSet={avatar.srcSet}
+              sizes="(max-width: 700px) 80vw, 460px"
+              alt={avatar.alt}
+              loading="eager"
+              fetchPriority="high"
+            />
+            <span className="speech-bubble" aria-hidden="true">
+              hi, I’m Yvonne!
+            </span>
+            <div className="hero-card wavy-frame frame-pink">
+              <ArtImage
+                src={kindArt.pet.src}
+                srcSet={kindArt.pet.srcSet}
+                sizes="180px"
+                alt="Marker illustration of a brown poodle with a pink bow"
               />
-              <div className="paper-caption">
-                <span>A love like no other.</span>
-                <Heart size={13} />
-              </div>
             </div>
-            <div className="keepsake-sticker">
-              <span>MADE BY HAND</span>
-              <Heart size={23} strokeWidth={1.4} />
-              <em>kept by heart</em>
-            </div>
-            <div className="handwritten hero-annotation">
-              a little piece
-              <br />
-              of your story
-              <svg viewBox="0 0 95 64" aria-hidden="true">
-                <path d="M86 6Q92 59 10 49M10 49L25 40M10 49L22 59" />
-              </svg>
-            </div>
+            <Sparkle className="float-sparkle s1" size={30} />
+            <Sparkle className="float-sparkle s2" size={18} />
+            <Sparkle className="float-sparkle s3" size={24} />
           </div>
         </section>
 
-        <div className="values-strip">
-          <span>
-            <PenLine /> A little hand-drawn happiness
-          </span>
-          <span className="strip-star">✳</span>
-          <span>
-            <Heart /> Thoughtful gifts, forever keepsakes
-          </span>
-          <span className="strip-star">✳</span>
-          <span>
-            <MapPin /> From Melbourne, with love
-          </span>
-          <span className="strip-star last-star">✳</span>
+        <div className="ticker" aria-label="What I draw">
+          {['Pets', 'People', 'Couples', 'Weddings', 'Live events', 'Gifts'].map(
+            (item) => (
+              <span key={item}>
+                {item} <Sparkle size={12} />
+              </span>
+            ),
+          )}
         </div>
+
+        <section
+          className="paths section-shell"
+          aria-labelledby="paths-title"
+        >
+          <h2 id="paths-title" className="visually-hidden">
+            Two ways to work together
+          </h2>
+          <button className="path-card path-yellow" onClick={() => openPortrait()}>
+            <span className="path-icon">
+              <Camera size={22} />
+            </span>
+            <span className="path-label">From your photos</span>
+            <strong>Custom portraits</strong>
+            <span className="path-text">
+              Pets, people and couples, drawn from your favourite photos as a
+              digital keepsake or a print.
+            </span>
+            <span className="path-cta">
+              Start a request <ArrowRight size={16} />
+            </span>
+          </button>
+          <button className="path-card path-blue" onClick={openEvent}>
+            <span className="path-icon">
+              <PartyPopper size={22} />
+            </span>
+            <span className="path-label">At your celebration</span>
+            <strong>Live illustration</strong>
+            <span className="path-text">
+              Guests sit for a quick, joyful portrait and take home a little
+              hand-drawn memory.
+            </span>
+            <span className="path-cta">
+              Enquire about your event <ArrowRight size={16} />
+            </span>
+          </button>
+        </section>
 
         <section
           className="work-section section-shell"
@@ -228,87 +251,54 @@ function App() {
           aria-labelledby="work-title"
         >
           <div className="section-heading">
-            <div>
-              <p className="eyebrow">THE LOVELY THINGS</p>
-              <h2 id="work-title">
-                Real people.
-                <br />
-                <em>A little extra wonder.</em>
-              </h2>
-            </div>
-            <div className="heading-aside">
-              <p>
-                A celebration of love, little quirks,
-                <br />
-                and the things that make us, us.
-              </p>
-              <a className="text-link" href="#portraits">
-                Something made just for you <ArrowDownRight size={18} />
-              </a>
-            </div>
+            <p className="eyebrow">The lovely things</p>
+            <h2 id="work-title">A little portfolio</h2>
+            <p>
+              Real pieces, photographed in my studio. Every one started as a
+              photo and a story.
+            </p>
           </div>
           <div
             className="gallery-filters"
             role="group"
-            aria-label="Filter portrait gallery"
+            aria-label="Filter portfolio"
           >
-            {['All the lovely things', 'Couples', 'Families', 'Pets'].map(
-              (item) => (
-                <button
-                  key={item}
-                  className={filter === item ? 'active' : ''}
-                  aria-pressed={filter === item}
-                  onClick={() => setFilter(item)}
-                >
-                  {item}
-                  {filter === item && <span>✳</span>}
-                </button>
-              ),
-            )}
+            {filters.map((item) => (
+              <button
+                key={item}
+                className={filter === item ? 'active' : ''}
+                aria-pressed={filter === item}
+                onClick={() => setFilter(item)}
+              >
+                {item}
+                <span className="filter-count" aria-hidden="true">
+                  {count(item)}
+                </span>
+              </button>
+            ))}
           </div>
-          <div className="art-gallery">
-            {pieces
-              .filter(
-                (piece) =>
-                  filter === 'All the lovely things' ||
-                  piece.category === filter,
-              )
-              .map((piece, i) => (
-                <button
-                  className={`gallery-piece piece-${piece.kind}`}
-                  key={piece.kind}
-                  onClick={() =>
-                    setModal({ type: 'artwork', kind: piece.kind })
-                  }
-                >
-                  <div className="gallery-art">
-                    <span className="art-tag">{piece.tag}</span>
-                    <div className={`gallery-paper paper-${i}`}>
-                      <Artwork kind={piece.kind} />
-                    </div>
-                    <span className="view-artwork">
-                      A closer look <ArrowUpRight size={17} />
-                    </span>
-                    {piece.kind === 'pet' && (
-                      <span className="pet-doodle">woof! ♡</span>
-                    )}
-                  </div>
-                  <div className="gallery-caption">
-                    <div>
-                      <h3>{piece.title}</h3>
-                      <p>{piece.note}</p>
-                    </div>
-                    <span className="round-arrow">
-                      <ArrowUpRight size={19} />
-                    </span>
-                  </div>
-                </button>
-              ))}
-          </div>
-          <p className="sample-note">
-            A little inspiration: sample SVG illustrations. Your real-life story
-            makes the final artwork yours.
+          <p className="visually-hidden" aria-live="polite">
+            Showing {shown.length} pieces
           </p>
+          <div className="art-gallery">
+            {shown.map((piece, i) => (
+              <button
+                className={`gallery-piece tilt-${i % 3} ${i % 2 ? 'shadow-sky' : 'shadow-butter'}`}
+                key={piece.id}
+                aria-label={`${piece.title}: a closer look`}
+                onClick={() => setModal({ type: 'artwork', piece })}
+              >
+                <span className="gallery-frame">
+                  <ArtImage src={piece.src} srcSet={piece.srcSet} alt={piece.alt} />
+                </span>
+                <span className="gallery-caption">
+                  <span className="piece-title">{piece.title}</span>
+                  <span className="piece-note">{piece.note}</span>
+                  <span className="piece-tag">{piece.category}</span>
+                </span>
+              </button>
+            ))}
+          </div>
         </section>
 
         <section
@@ -317,51 +307,62 @@ function App() {
           aria-labelledby="portraits-title"
         >
           <div className="section-shell portrait-inner">
-            <div className="portrait-still-life">
-              <div className="gingham-mat" />
-              <div className="little-portrait">
-                <Artwork kind="family" />
-                <span>The people who feel like home.</span>
-              </div>
-              <div className="gift-tag">
-                <Heart size={20} />
-                <span>
-                  For someone
-                  <br />
-                  <em>pretty special.</em>
-                </span>
-              </div>
-              <DoodleFlower className="portrait-flower" />
+            <div className="portrait-art">
+              <ArtImage
+                className="portrait-photo"
+                src={wavyTrio.src}
+                srcSet={wavyTrio.srcSet}
+                sizes="(max-width: 800px) 90vw, 460px"
+                alt={wavyTrio.alt}
+              />
+              <span className="handwritten-note portrait-note">
+                Billy, Winston &amp; a pink bow pup
+              </span>
+              <Sparkle className="float-sparkle s4" size={26} />
             </div>
             <div className="portrait-copy">
-              <p className="eyebrow">PERSONAL. PLAYFUL. COMPLETELY YOURS.</p>
-              <h2 id="portraits-title">
-                Some gifts say a lot.
-                <br />
-                <em>This one says you.</em>
-              </h2>
+              <p className="eyebrow">Custom portraits</p>
+              <h2 id="portraits-title">Some gifts say a lot. This one says you.</h2>
               <p>
-                For your favourite human, your whole little family, or the
-                four-legged love of your life. A custom portrait captures all
-                the little things that make them special.
+                For your favourite human, your whole little crew, or the
+                four-legged love of your life. I draw the little things:
+                the bow they always wear, the way they tilt their head.
               </p>
-              <ul className="check-list">
-                <li>
-                  <Check /> Thoughtfully illustrated from your favourite photos
-                </li>
-                <li>
-                  <Check /> Couples, families, pets & wonderfully unique people
-                </li>
-                <li>
-                  <Check /> Digital keepsakes or art prints to make a house a
-                  home
-                </li>
+              <ul className="kind-list">
+                {(
+                  [
+                    ['pet', 'Pets', 'floofs, snoots & bows'],
+                    ['family', 'People', 'friends, family & you'],
+                    ['couple', 'Couples', 'anniversaries & weddings'],
+                  ] as const
+                ).map(([kind, label, detail]) => (
+                  <li key={kind}>
+                    <button onClick={() => openPortrait(kind)}>
+                      <span className={`kind-thumb wavy-frame frame-${kindArt[kind].frame}`}>
+                        <ArtImage
+                          src={kindArt[kind].src}
+                          srcSet={kindArt[kind].srcSet}
+                          sizes="90px"
+                          alt=""
+                        />
+                      </span>
+                      <span>
+                        <strong>{label}</strong>
+                        <small>{detail}</small>
+                      </span>
+                      <ArrowRight size={16} aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
               </ul>
-              <button className="button button-primary" onClick={openPortrait}>
+              <button
+                className="button button-primary"
+                onClick={() => openPortrait()}
+              >
                 Create my little keepsake <ArrowUpRight size={18} />
               </button>
               <p className="small-note">
-                A personal quote. A personal portrait. A whole lot of heart.
+                Every request gets a personal quote before any payment.
               </p>
             </div>
           </div>
@@ -374,54 +375,47 @@ function App() {
         >
           <div className="section-shell live-inner">
             <div className="live-copy">
-              <p className="eyebrow">LIVE ILLUSTRATION, LOVELY CONNECTIONS</p>
-              <h2 id="live-title">
-                Good company.
-                <br />
-                Great memories.
-                <br />
-                <em>A little drawn magic.</em>
-              </h2>
+              <p className="eyebrow">Live illustration</p>
+              <h2 id="live-title">Good company. Great memories. A little drawn magic.</h2>
               <p>
                 An experience to delight your guests, and a keepsake to remember
-                it by. I capture the lovely faces at your event, one joyful
+                it by. I draw the lovely faces at your event, one joyful little
                 portrait at a time.
               </p>
               <div className="occasion-tags">
                 <span>Weddings</span>
                 <span>Brand events</span>
+                <span>Birthdays</span>
                 <span>Celebrations</span>
               </div>
               <button className="button button-dark" onClick={openEvent}>
                 Let’s draw a crowd <ArrowUpRight size={18} />
               </button>
               <span className="live-location">
-                <MapPin size={13} /> Melbourne & beyond, by arrangement
+                <MapPin size={13} /> Melbourne &amp; beyond, by arrangement
               </span>
             </div>
             <div className="live-art">
-              <div className="live-arch" />
-              <div className="live-paper live-paper-one">
-                <Artwork kind="live" />
-                <span>the happy couple ♡</span>
-              </div>
-              <div className="live-paper live-paper-two">
-                <Artwork kind="family" />
-                <span>all together, always</span>
-              </div>
-              <div className="live-badge">
-                <Sparkles size={22} />
-                <span>
-                  A party favour
-                  <br />
-                  <em>with personality.</em>
-                </span>
-              </div>
-              <DoodleFlower className="live-flower" />
-              <span className="handwritten live-annotation">
-                a moment of joy,
-                <br />a memory for keeps.
-              </span>
+              <figure className="live-card card-one">
+                <ArtImage
+                  src={kindArt.couple.src}
+                  srcSet={kindArt.couple.srcSet}
+                  sizes="300px"
+                  alt={kindArt.couple.alt}
+                />
+                <figcaption>bundled up &amp; in love</figcaption>
+              </figure>
+              <figure className="live-card card-two">
+                <ArtImage
+                  src={pieces.find((p) => p.id === 'wedding-cat')!.src}
+                  srcSet={pieces.find((p) => p.id === 'wedding-cat')!.srcSet}
+                  sizes="300px"
+                  alt={pieces.find((p) => p.id === 'wedding-cat')!.alt}
+                />
+                <figcaption>just married, plus cat</figcaption>
+              </figure>
+              <Sparkle className="float-sparkle s5" size={28} />
+              <Sparkle className="float-sparkle s6" size={16} />
             </div>
           </div>
         </section>
@@ -430,46 +424,36 @@ function App() {
           className="process-section section-shell"
           aria-labelledby="process-title"
         >
-          <div className="process-heading">
-            <p className="eyebrow">FROM A LITTLE IDEA TO A FOREVER THING</p>
-            <h2 id="process-title">
-              A little less complicated.
-              <br />
-              <em>A whole lot more personal.</em>
-            </h2>
+          <div className="section-heading">
+            <p className="eyebrow">How it works</p>
+            <h2 id="process-title">From a little idea to a forever thing</h2>
           </div>
-          <div className="process-steps">
-            <article>
-              <span className="step-number">
-                01 <span>✧</span>
-              </span>
+          <ol className="process-steps">
+            <li>
+              <span className="step-number">1</span>
               <h3>Tell me your story</h3>
               <p>
                 Pick your portrait or tell me about your event. Share the little
                 details that matter to you.
               </p>
-            </article>
-            <article>
-              <span className="step-number">
-                02 <PenLine size={25} strokeWidth={1} />
-              </span>
-              <h3>I’ll add a little magic</h3>
+            </li>
+            <li>
+              <span className="step-number">2</span>
+              <h3>I add a little magic</h3>
               <p>
-                We’ll agree on all the details, then I’ll turn those favourite
-                faces into something full of life.
+                We agree on the details and your quote, then I turn those
+                favourite faces into something full of life.
               </p>
-            </article>
-            <article>
-              <span className="step-number">
-                03 <Heart size={25} strokeWidth={1} />
-              </span>
+            </li>
+            <li>
+              <span className="step-number">3</span>
               <h3>Keep the feeling forever</h3>
               <p>
-                A thoughtful gift. A joyful moment. A little piece of art that’s
-                entirely, wonderfully yours.
+                A thoughtful gift, a joyful moment, and a little piece of art
+                that’s entirely yours.
               </p>
-            </article>
-          </div>
+            </li>
+          </ol>
         </section>
 
         <section
@@ -478,45 +462,39 @@ function App() {
           aria-labelledby="about-title"
         >
           <div className="about-art">
-            <div className="about-art-frame">
-              <Artwork
-                kind="studio"
-                label="SVG illustration of an artist at her studio table"
-              />
-            </div>
-            <span className="handwritten about-note">
-              a happy little
-              <br />
-              place to create ♡
+            <div className="about-blob" aria-hidden="true" />
+            <ArtImage
+              className="about-avatar"
+              src={avatar.src}
+              srcSet={avatar.srcSet}
+              sizes="(max-width: 800px) 80vw, 420px"
+              alt={avatar.alt}
+            />
+            <span className="handwritten-note about-note">
+              that’s me, sprout and all
             </span>
-            <span className="about-spark">✳</span>
+            <Sparkle className="float-sparkle s7" size={24} />
           </div>
           <div className="about-copy">
-            <p className="eyebrow">THE HANDS & HEART BEHIND THE ART</p>
-            <h2 id="about-title">
-              Hello, I’m Yvonne.
-              <br />
-              <em>
-                Your people person.
-                <br />
-                With a paintbrush.
-              </em>
-            </h2>
+            <p className="eyebrow">Meet Yvonne</p>
+            <h2 id="about-title">Hello, I’m Yvonne!</h2>
             <p>
-              I’m an illustrator based in Melbourne, making heartfelt portraits
-              and bringing a little creative joy to celebrations.
+              I’m an illustrator based in Melbourne, drawing heartfelt little
+              portraits with markers and bringing a bit of creative joy to
+              celebrations.
             </p>
             <p>
-              I’m here for the small details: the way you hold hands, that
-              favourite outfit, those wonderfully wonky ears. The little things
-              that make a portrait feel like <em>you.</em>
+              I’m here for the small details: the pink bow, the favourite
+              beanie, those wonderfully wonky ears. The little things that make
+              a portrait feel like <em>you</em>.
             </p>
             <p>
-              Welcome to my little corner of the world. I’m so happy you’re
-              here.
+              You’ll find my pieces signed{' '}
+              <span className="handle">@itseevee_world</span>. Welcome to my
+              little corner of the world. I’m so happy you’re here.
             </p>
             <span className="signature">
-              with love, Yvonne <Heart size={19} strokeWidth={1.3} />
+              with love, Yvonne <Heart size={18} strokeWidth={2} />
             </span>
           </div>
         </section>
@@ -527,12 +505,8 @@ function App() {
           aria-labelledby="faq-title"
         >
           <div className="faq-heading">
-            <p className="eyebrow">A FEW LITTLE ANSWERS</p>
-            <h2 id="faq-title">
-              Wondering
-              <br />
-              <em>about something?</em>
-            </h2>
+            <p className="eyebrow">A few little answers</p>
+            <h2 id="faq-title">Wondering about something?</h2>
             <p>Here’s a little help to get you started.</p>
             <button className="text-link" onClick={openEvent}>
               Let’s have a chat <ArrowUpRight size={17} />
@@ -543,7 +517,7 @@ function App() {
               <details key={question}>
                 <summary>
                   {question}
-                  <ChevronDown size={18} />
+                  <ChevronDown size={18} aria-hidden="true" />
                 </summary>
                 <p>{answer}</p>
               </details>
@@ -551,18 +525,17 @@ function App() {
           </div>
         </section>
 
-        <section className="final-cta">
-          <DoodleFlower className="cta-flower flower-left" />
+        <section className="final-cta" aria-labelledby="cta-title">
+          <Sparkle className="cta-sparkle left" size={34} />
           <div>
-            <p className="eyebrow">LET’S MAKE SOMETHING MEANINGFUL</p>
-            <h2>
-              Your memories.
-              <br />
-              <em>A little more magical.</em>
-            </h2>
-            <p>For the people and the moments you never want to forget.</p>
+            <p className="eyebrow">Let’s make something meaningful</p>
+            <h2 id="cta-title">Your people, drawn with love.</h2>
+            <p>For the faces and moments you never want to forget.</p>
             <div className="cta-actions">
-              <button className="button button-primary" onClick={openPortrait}>
+              <button
+                className="button button-primary"
+                onClick={() => openPortrait()}
+              >
                 Make it personal <ArrowUpRight size={17} />
               </button>
               <button className="button button-outline" onClick={openEvent}>
@@ -570,25 +543,18 @@ function App() {
               </button>
             </div>
           </div>
-          <DoodleFlower className="cta-flower flower-right" />
-          <span className="cta-star">✦</span>
+          <Sparkle className="cta-sparkle right" size={24} />
         </section>
       </main>
 
       <footer className="site-footer section-shell">
         <div className="footer-top">
           <a className="wordmark footer-wordmark" href="#">
-            <DoodleFlower className="brand-flower" />
-            <span>
-              yvonne<span className="wordmark-bottom">S T U D I O S</span>
-            </span>
+            <Wordmark />
           </a>
-          <p>
-            A little art.
-            <br />A lot of heart.
-          </p>
+          <p>A little art. A lot of heart.</p>
           <div className="footer-links">
-            <a href="#work">The lovely things</a>
+            <a href="#work">Portfolio</a>
             <a href="#about">Meet Yvonne</a>
             <a href="#faq">Little questions</a>
           </div>
@@ -600,9 +566,9 @@ function App() {
           <span>
             © {new Date().getFullYear()} Yvonne Studios · Melbourne, Australia
           </span>
-          <span>Made with love & a little imagination ♡</span>
+          <span>All artwork © Yvonne · @itseevee_world</span>
           <button onClick={() => setModal({ type: 'privacy' })}>
-            Privacy & studio preview
+            Privacy &amp; studio preview
           </button>
         </div>
       </footer>
@@ -612,23 +578,30 @@ function App() {
       )}
       {modal?.type === 'event' && <EventForm onClose={close} />}
       {modal?.type === 'artwork' && (
-        <Dialog title="A closer look at the illustration" onClose={close}>
+        <Dialog title={`A closer look: ${modal.piece.title}`} onClose={close}>
           <div className="artwork-detail">
-            <Artwork kind={modal.kind} />
+            <div className={`detail-frame wavy-frame frame-${modal.piece.frame}`}>
+              <ArtImage
+                src={modal.piece.src}
+                srcSet={modal.piece.srcSet}
+                sizes="(max-width: 700px) 85vw, 420px"
+                alt={modal.piece.alt}
+                loading="eager"
+              />
+            </div>
             <div>
-              <p className="eyebrow">A LITTLE INSPIRATION</p>
-              <h2>{pieces.find((p) => p.kind === modal.kind)?.title}</h2>
+              <p className="eyebrow">{modal.piece.category}</p>
+              <h2>{modal.piece.title}</h2>
+              <p>{modal.piece.note}</p>
               <p>
-                An illustration that celebrates your story, your favourite
-                faces, and all the details in between.
-              </p>
-              <p className="form-note">
-                Sample SVG artwork, shown as inspiration for your own
-                commission.
+                Hand-drawn with markers from a favourite photo, with the name
+                lettered by hand and a sprinkle of sparkles.
               </p>
               <button
                 className="button button-primary"
-                onClick={() => setModal({ type: 'portrait', kind: modal.kind })}
+                onClick={() =>
+                  setModal({ type: 'portrait', kind: modal.piece.kind })
+                }
               >
                 Make one yours <ArrowUpRight size={17} />
               </button>
@@ -639,16 +612,12 @@ function App() {
       {modal?.type === 'privacy' && (
         <Dialog title="Privacy and studio preview" onClose={close}>
           <div className="privacy-content">
-            <p className="eyebrow">A LITTLE TRANSPARENCY</p>
-            <h2>
-              Your details,
-              <br />
-              <em>handled with care.</em>
-            </h2>
+            <p className="eyebrow">A little transparency</p>
+            <h2>Your details, handled with care.</h2>
             <p>
-              This is a studio website preview with sample SVG artwork and
-              temporary business details. No payment is collected and no booking
-              is confirmed through this preview.
+              This is a studio website preview with temporary business details.
+              No payment is collected and no booking is confirmed through this
+              preview.
             </p>
             <p>
               When you submit a form, your name, email, project details and any

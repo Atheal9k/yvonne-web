@@ -9,8 +9,9 @@ import {
   LoaderCircle,
   X,
 } from 'lucide-react'
-import { Artwork } from './Artwork'
-import type { ArtworkKind } from './Artwork'
+import { kindArt } from '../portfolio'
+import type { PortraitKind } from '../portfolio'
+import { ArtImage, Sparkle } from './Decor'
 
 export function Dialog({
   children,
@@ -110,12 +111,10 @@ export function PortraitForm({
   initialKind = 'couple',
   onClose,
 }: {
-  initialKind?: ArtworkKind
+  initialKind?: PortraitKind
   onClose: () => void
 }) {
-  const [kind, setKind] = useState(
-    initialKind === 'live' || initialKind === 'studio' ? 'couple' : initialKind,
-  )
+  const [kind, setKind] = useState<PortraitKind>(initialKind)
   const [format, setFormat] = useState('digital')
   const [step, setStep] = useState(1)
   const [reference, setReference] = useState('')
@@ -148,7 +147,15 @@ export function PortraitForm({
         <div className="request-layout">
           <aside className="request-art">
             <span className="eyebrow">A LITTLE PIECE OF YOUR STORY</span>
-            <Artwork kind={kind} />
+            <div className={`request-frame wavy-frame frame-${kindArt[kind].frame}`}>
+              <ArtImage
+                src={kindArt[kind].src}
+                srcSet={kindArt[kind].srcSet}
+                sizes="280px"
+                alt={kindArt[kind].alt}
+              />
+              <Sparkle className="request-sparkle" />
+            </div>
             <p>
               One of a kind.
               <br />
@@ -186,7 +193,12 @@ export function PortraitForm({
                         type="button"
                         onClick={() => setKind(value)}
                       >
-                        <Artwork kind={value} />
+                        <ArtImage
+                          src={kindArt[value].src}
+                          srcSet={kindArt[value].srcSet}
+                          sizes="120px"
+                          alt=""
+                        />
                         <span>{label}</span>
                         {kind === value && (
                           <Check className="choice-check" size={15} />

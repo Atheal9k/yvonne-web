@@ -16,8 +16,8 @@ test('desktop studio gallery, FAQ, portrait request and enquiry', async ({
   })
 
   await page.getByRole('button', { name: 'Pets', exact: true }).click()
-  await expect(page.locator('.gallery-piece')).toHaveCount(1)
-  await page.locator('.gallery-piece').click()
+  await expect(page.locator('.gallery-piece')).toHaveCount(6)
+  await page.locator('.gallery-piece').first().click()
   await expect(page.getByRole('dialog')).toBeVisible()
   await page.getByRole('button', { name: 'Make one yours' }).click()
   await expect(
